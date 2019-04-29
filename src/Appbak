@@ -1,0 +1,300 @@
+import React, { Component } from 'react';
+import firebase from './firebase'
+
+class App extends Component {
+
+  constructor(){
+     super();
+     this.state = {
+        orders:[],
+        user_id:'',
+        item_name:'',
+        name:'',
+        address:'',
+        shown: true,
+        lip:false,
+        eye:false,
+        cus:false,
+        home:true
+     }
+     this.handleChange = this.handleChange.bind(this)
+     this.handleUpdate = this.handleUpdate.bind(this)
+     this.handleSubmit = this.handleSubmit.bind(this)
+
+  }
+  
+  
+  componentDidMount(){
+    const ordersRef = firebase.database().ref('orders');
+    ordersRef.on('value',(snapshot) => {
+        let orders = snapshot.val();
+        let newState = [];
+        for(let item in orders){
+          newState.push({
+              user_id:item,
+              item_name:orders[item].item_name,
+              name:orders[item].name,
+              address:orders[item].address
+          })
+        }
+        this.setState({
+          orders:newState
+        })
+    })
+  }
+
+  handleChange(e){
+    this.setState({
+      [e.target.name]: e.target.value
+    })
+  }
+
+
+  handleSubmit(e){
+    e.preventDefault();
+    if(this.state.item_name==''){
+      alert("Please choose item before orders.");
+    }
+    else if(this.state.name==''){
+      alert("Please input Your Name.");
+    }
+    else if(this.state.address==''){
+      alert("Please input Your Address.");
+    }
+    else{
+    if(this.state.user_id != ''){
+      return this.updateItem();
+    }
+    const ordersRef = firebase.database().ref('orders')
+    const item = {
+       item_name : this.state.item_name,
+       name : this.state.name,
+       address : this.state.address
+    }
+    ordersRef.push(item)
+    this.setState({
+       user_id:'',
+       item_name:'',
+       name:'',
+       address:''
+    })
+  }
+ }
+
+  handleUpdate = (user_id = null , item_name = null , name = null , address = null) => {
+    this.setState({user_id,item_name,name,address})
+  }
+
+  updateItem(){
+
+      var obj = { item_name:this.state.item_name,name:this.state.name,address:this.state.address }
+
+      const ordersRef = firebase.database().ref('/orders')
+
+      ordersRef.child(this.state.user_id).update(obj);
+
+      this.setState({
+        user_id:'',
+        item_name:'',
+        name:'',
+        address:''
+      })
+
+  }
+
+  removeItem(itemId){
+    const ordersRef = firebase.database().ref('/orders');
+    ordersRef.child(itemId).remove();
+ }
+ toggleModal() {    
+  this.setState((prev, props) => {
+    const newState = !prev.modalState;
+    
+    return { modalState: newState };
+  });
+}
+admin() {
+  var password = window.prompt("Password")
+  if(password=='admin'){
+  this.setState({
+    shown: !this.state.shown
+  })}
+  else{
+    alert("wrong password");
+  };
+}
+showLip(){
+  this.setState({
+    lip: true,
+    eye: false,
+    cus: false,
+    home:false
+  })
+}
+showEye(){
+  this.setState({
+    lip: false,
+    eye: true,
+    cus: false,
+    home:false
+  })
+}
+showCus(){
+  this.setState({
+    lip: false,
+    eye: false,
+    cus: true,
+    home:false
+  })
+}
+showHome(){
+  this.setState({
+    lip: false,
+    eye: false,
+    cus: false,
+    home:true
+  })
+}
+  render() {
+    var shown = {
+			display: this.state.shown ? "block" : "none"
+		};
+		
+		var hidden = {
+			display: this.state.shown ? "none" : "block"
+    }
+
+    var hidelip={
+      display: this.state.lip ? "block" : "none"
+    }
+    var hideeye={
+      display: this.state.eye ? "block" : "none"
+    }
+    var hidecus={
+      display: this.state.cus ? "block" : "none"
+    }
+    var hidehome={
+      display: this.state.home ? "block" : "none"
+    }
+    return (
+      <div className="app">
+      <div class="navbar">
+      <table className="table table-sm table-bordered">
+      
+       <tr className="thead-dark">
+       <th width="25%"><a href="#" onClick={this.showHome.bind(this)}>Home</a></th>
+       <th width="25%"><a href="#" onClick={this.showLip.bind(this)}>Lipstick</a></th>
+       <th width="25%"><a href="#" onClick={this.showEye.bind(this)}>EyePalett</a></th>
+       <th width="25%"><a href="#" onClick={this.showCus.bind(this)}>Foundation</a></th></tr>
+
+
+      </table></div>
+      
+      <div className="container" style={{marginTop:70}}>
+      <form  onSubmit={this.handleSubmit} onKeyPress={event => {
+      if (event.which === 13) {
+        event.preventDefault();
+        }
+      }}>
+             <table style={ hidehome } className="table table-sm table-bordered">
+             <center><iframe width="560" height="315" src="https://www.youtube.com/embed/jHuOV_imSek" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+             </center> </table>
+            <table style={ hidelip } className="table table-sm table-bordered">
+                    <tr className="thead-light">
+                    <th width="25%"><img src={require('./pic/1.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nGiorgio Armani Beauty'}></img></th>
+                    <th width="25%"><img src={require('./pic/2.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nYves Saint Laurent Ro'}></img></th>
+                    <th width="25%"><img src={require('./pic/3.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nPat Mcgrath Labs Matt'}></img></th>
+                    <th width="25%"><img src={require('./pic/4.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nKat Von D Everlasting'}></img></th>
+
+                    </tr>
+                    <tr className="thead-light">
+                    
+                    <th width="25%"><img src={require('./pic/5.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nPat Mcgrath Labs Mini'}></img></th>
+                    <th width="25%"><img src={require('./pic/6.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nNars Velvet Matte Lip'}></img></th>
+                    <th width="25%"><img src={require('./pic/7.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nCharlotte Tilbury Mat'}></img></th>
+                    <th width="25%"><img src={require('./pic/8.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nHuda Beauty Power Bul'}></img></th>
+                    </tr>
+                    </table>
+           <table style={ hideeye } className="table table-sm table-bordered">
+                    <tr className="thead-light">
+                    <th width="25%"><img src={require('./pic/9.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nHuda Beauty New Nude '}></img></th>
+                    <th width="25%"><img src={require('./pic/10.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nCharlotte Tilbury Lux'}></img></th>
+                    <th width="25%"><img src={require('./pic/11.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nHuda Beauty Obsession'}></img></th>
+                    <th width="25%"><img src={require('./pic/12.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nToo Faced Natural Lus'}></img></th>
+
+                    </tr>
+                    <tr className="thead-light">
+                    
+                    <th width="25%"><img src={require('./pic/13.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nNatasha Denona Biba A'}></img></th>
+                    <th width="25%"><img src={require('./pic/14.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nTom ford Eye Color Qu'}></img></th>
+                    <th width="25%"><img src={require('./pic/15.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nUrban Decay Naked2 Pa'}></img></th>
+                    <th width="25%"><img src={require('./pic/16.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nAnastasia Beverly Hil'}></img></th>
+                    </tr>
+                    </table>
+            <table style={ hidecus } className="table table-sm table-bordered">
+                    <tr className="thead-light">
+                    <th width="25%"><img src={require('./pic/17.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nFenty Beauty By Rihann'}></img></th>
+                    <th width="25%"><img src={require('./pic/18.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nEstee Lauder Double Ma'}></img></th>
+                    <th width="25%"><img src={require('./pic/19.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nGiorgio Armani Beauty '}></img></th>
+                    <th width="25%"><img src={require('./pic/20.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nMake Up For Ever Ultra'}></img></th>
+
+                    </tr>
+                    <tr className="thead-light">
+                    
+                    <th width="25%"><img src={require('./pic/21.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nIT Cosmetics SPF 50 +'}></img></th>
+                    <th width="25%"><img src={require('./pic/22.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nToo Faced Born This w'}></img></th>
+                    <th width="25%"><img src={require('./pic/23.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nBareminerals Original'}></img></th>
+                    <th width="25%"><img src={require('./pic/24.jpg')} class="img-thumbnail" onClick={() => this.state.item_name=this.state.item_name+'\nLancome Teint Idole M'}></img></th>
+                    </tr>
+                    </table>
+          
+          <div className="row">
+                <div className="col-8">
+                  <div className="form-row">
+                    <div className="col-4">
+                      <input type="text" name="name" className="form-control" placeholder="name" onChange={this.handleChange} value={this.state.name}/>
+                    </div>
+                    <br></br><br></br>
+                    <div className="col-12">
+                      <textarea type="text" name="address" className="form-control" placeholder="address" onChange={this.handleChange} value={this.state.address}/>
+                    </div>
+                    <br></br><br></br><br></br>
+                    <div className="col">
+                    <button type="submit" class="btn btn-primary">Order</button>&nbsp;&nbsp;
+                    <button type="button" class="btn btn-primary" onClick={()=>alert("ในตระกร้ามีสินค้าดังนี้"+this.state.item_name)}>Cart</button>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            </form>
+        <hr/>
+        <button onClick={this.admin.bind(this)}>Admin</button>
+              <table style={ hidden } className="table table-hover">
+                    <tr className="thead-light">
+                      <th width="18%">item_name</th>
+                      <th width="20%">name</th>
+                      <th width="52%">address</th>
+                      <th width="5%">Edit</th>
+                      <th width="5%">Delete</th>
+                    </tr>
+                    {
+                        this.state.orders.map((item) => {
+                          return (
+                              <tr>
+                                <td>{item.item_name}</td>
+                                <td>{item.name}</td>
+                                <td>{item.address}</td>
+                                <td><button className="btn btn-warning btn-md" onClick={() => this.handleUpdate(item.user_id,item.item_name,item.name,item.address)}>Edit</button></td>
+                                <td><button className="btn btn-danger btn-md" onClick={() => this.removeItem(item.user_id)}>Delete</button></td>
+                              </tr>
+                          )
+                        })
+                    }
+                </table>
+          </div>
+      </div>
+    );
+  }
+}
+
+export default App;
